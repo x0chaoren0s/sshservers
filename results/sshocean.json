@@ -1,0 +1,107 @@
+{
+    "https://sshocean.com/ssh7days/australia/au02": {
+        "region": "Australia",
+        "host": "au02.ssh0.net",
+        "port": "22",
+        "Referer": "https://sshocean.com/ssh7days/australia",
+        "user": "sshocean-4tdhcib97ld4",
+        "pass": "5tr66vsmbr9b",
+        "config": "forward=ssh://sshocean-4tdhcib97ld4:5tr66vsmbr9b@au02.ssh0.net:22",
+        "date_create": "2023-04-06",
+        "date_expire": "2023-04-13",
+        "date_span": "2023-04-06 - 2023-04-13"
+    },
+    "https://sshocean.com/ssh7days/france/fr03": {
+        "region": "France",
+        "host": "fr03.ssh0.net",
+        "port": "22",
+        "Referer": "https://sshocean.com/ssh7days/france",
+        "user": "sshocean-n8bujddlupko",
+        "pass": "jarw83q7gnf0",
+        "config": "forward=ssh://sshocean-n8bujddlupko:jarw83q7gnf0@fr03.ssh0.net:22",
+        "date_create": "2023-04-06",
+        "date_expire": "2023-04-13",
+        "date_span": "2023-04-06 - 2023-04-13"
+    },
+    "https://sshocean.com/ssh7days/netherlands/nl02": {
+        "region": "Netherlands",
+        "host": "nl02.sshocean.net",
+        "port": 22,
+        "Referer": "https://sshocean.com/ssh7days/netherlands",
+        "error_info": "something wrong."
+    },
+    "https://sshocean.com/ssh7days/netherlands/nl03": {
+        "region": "Netherlands",
+        "host": "nl03.sshocean.net",
+        "port": 22,
+        "Referer": "https://sshocean.com/ssh7days/netherlands",
+        "error_info": "something wrong."
+    },
+    "https://sshocean.com/ssh7days/poland/pl02": {
+        "region": "Poland",
+        "host": "pl02.sshocean.net",
+        "port": 22,
+        "Referer": "https://sshocean.com/ssh7days/poland",
+        "error_info": "something wrong."
+    },
+    "https://sshocean.com/ssh7days/south-africa/za01": {
+        "region": "South Africa",
+        "host": "za01.sshocean.net",
+        "port": "22",
+        "Referer": "https://sshocean.com/ssh7days/south-africa",
+        "user": "sshocean-beihkq25n6pn",
+        "pass": "p2gjuaeo9apn",
+        "config": "forward=ssh://sshocean-beihkq25n6pn:p2gjuaeo9apn@za01.sshocean.net:22",
+        "date_create": "2023-04-06",
+        "date_expire": "2023-04-13",
+        "date_span": "2023-04-06 - 2023-04-13"
+    },
+    "https://sshocean.com/ssh7days/united-kingdom/uk03": {
+        "region": "United Kingdom",
+        "host": "uk03.ssh0.net",
+        "port": "22",
+        "Referer": "https://sshocean.com/ssh7days/united-kingdom",
+        "user": "sshocean-pvelzvwgi1pc",
+        "pass": "0rzgbornt0nu",
+        "config": "forward=ssh://sshocean-pvelzvwgi1pc:0rzgbornt0nu@uk03.ssh0.net:22",
+        "date_create": "2023-04-06",
+        "date_expire": "2023-04-13",
+        "date_span": "2023-04-06 - 2023-04-13"
+    },
+    "https://sshocean.com/ssh7days/united-states/us02": {
+        "region": "United States",
+        "host": "us02.sshocean.net",
+        "port": "22",
+        "Referer": "https://sshocean.com/ssh7days/united-states",
+        "user": "sshocean-dusmxjhqtxge",
+        "pass": "nzztvajdzzk4",
+        "config": "forward=ssh://sshocean-dusmxjhqtxge:nzztvajdzzk4@us02.sshocean.net:22",
+        "date_create": "2023-04-06",
+        "date_expire": "2023-04-13",
+        "date_span": "2023-04-06 - 2023-04-13"
+    },
+    "https://sshocean.com/ssh7days/united-states/us04": {
+        "region": "United States",
+        "host": "us04.sshocean.net",
+        "port": "22",
+        "Referer": "https://sshocean.com/ssh7days/united-states",
+        "user": "sshocean-a0dogebofgob",
+        "pass": "ghmtcrkmqjnb",
+        "config": "forward=ssh://sshocean-a0dogebofgob:ghmtcrkmqjnb@us04.sshocean.net:22",
+        "date_create": "2023-04-06",
+        "date_expire": "2023-04-13",
+        "date_span": "2023-04-06 - 2023-04-13"
+    },
+    "https://sshocean.com/ssh7days/united-states/us05": {
+        "region": "United States",
+        "host": "us05.sshocean.net",
+        "port": "22",
+        "Referer": "https://sshocean.com/ssh7days/united-states",
+        "user": "sshocean-9rocydhd84d2",
+        "pass": "i1zlbzfy2aaw",
+        "config": "forward=ssh://sshocean-9rocydhd84d2:i1zlbzfy2aaw@us05.sshocean.net:22",
+        "date_create": "2023-04-06",
+        "date_expire": "2023-04-13",
+        "date_span": "2023-04-06 - 2023-04-13"
+    }
+}
