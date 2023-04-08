@@ -1,10 +1,10 @@
-import time, requests, logging, random, string, json, os
+import time, requests, logging, random, string, json, os, pathlib
 from typing import Tuple, Iterable
 from tqdm import tqdm
 
 class Server_parser_base:
     name = 'Server_parser_base'
-    save_folder = r'D:\Users\60490\sshservers\results'
+    save_folder = pathlib.Path(__file__).absolute().parent.parent.parent/'results'
 
     def __init__(self,
                  server_dict: dict = dict(),

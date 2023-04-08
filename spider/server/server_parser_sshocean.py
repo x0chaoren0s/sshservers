@@ -1,14 +1,15 @@
-import sys
-sys.path.append(r'D:\Users\60490\sshservers')
+import sys, pathlib
+sys.path.append(pathlib.Path(__file__).parent.parent.parent)
 
-from spider.server.server_parser_base import Server_parser_base, Tuple
-from spider.server_list.server_list_parser_sshocean import SLP_SSHOCEAN
+
+from .server_parser_base import Server_parser_base, Tuple
+from ..server_list.server_list_parser_sshocean import SLP_SSHOCEAN
 
 from lxml import etree
 
 class Server_parser_sshocean(Server_parser_base):
     name = 'sshocean'
-    def __init__(self, server_dict: dict = ..., interval_sec: int = 0) -> None:
+    def __init__(self, server_dict: dict = SLP_SSHOCEAN.parse(), interval_sec: int = 0) -> None:
         super().__init__(server_dict, interval_sec)
 
     def filling_form(self, res) -> Tuple[str, dict]:
@@ -41,6 +42,7 @@ class Server_parser_sshocean(Server_parser_base):
             ret['error_info'] = 'something wrong.'
         return ret
     
+SP_SSHOCEAN = Server_parser_sshocean()
 
 if __name__ == '__main__':
     server_dict = SLP_SSHOCEAN.parse()

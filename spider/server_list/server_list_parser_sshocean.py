@@ -1,7 +1,7 @@
-import sys
-sys.path.append(r'D:\Users\60490\sshservers')
+import sys, pathlib
+sys.path.append(pathlib.Path(__file__).parent.parent.parent)
 
-from spider.server_list.server_list_parser_base import Server_list_parser_base
+from .server_list_parser_base import Server_list_parser_base
 
 import requests
 from lxml import etree
