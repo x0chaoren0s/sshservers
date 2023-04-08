@@ -1,5 +1,6 @@
-import sys, pathlib
-sys.path.append(pathlib.Path(__file__).parent.parent.parent)
+import sys
+from pathlib import Path
+sys.path.append(Path(__file__).parent.parent.parent)
 
 
 from .server_parser_base import Server_parser_base, Tuple

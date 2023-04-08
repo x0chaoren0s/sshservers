@@ -1,10 +1,11 @@
-import time, requests, logging, random, string, json, os, pathlib
+import time, requests, logging, random, string, json
 from typing import Tuple, Iterable
 from tqdm import tqdm
+from pathlib import Path
 
 class Server_parser_base:
     name = 'Server_parser_base'
-    save_folder = pathlib.Path(__file__).absolute().parent.parent.parent/'results'
+    save_folder = Path(__file__).absolute().parent.parent.parent/'results'
 
     def __init__(self,
                  server_dict: dict = dict(),
@@ -52,10 +53,10 @@ class Server_parser_base:
             else:
                 self.logger.info(f"{ret[url]['region']}, {ret[url]['config']}")
         if save:
-            json_file = os.path.join(self.save_folder, f'{self.name}.json')
+            json_file = self.save_folder/f'{self.name}.json'
             with open(json_file, 'w') as fout:
                 json.dump(ret, fout, indent=4)
-            config_file = os.path.join(self.save_folder, f'{self.name}.conf')
+            config_file = self.save_folder/f'{self.name}.conf'
             with open(config_file, 'w') as fout:
                 for i,server_info in enumerate(ret.values()):
                     if i==0:
