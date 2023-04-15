@@ -10,9 +10,9 @@ from lxml import etree
 
 class Server_parser_sshocean(Server_parser_base):
     name = 'sshocean'
-    def __init__(self, server_dict: dict = SLP_SSHOCEAN.parse(), interval_sec: int = 0) -> None:
-        super().__init__(server_dict, interval_sec)
-
+    def __init__(self, server_dict: dict = None, server_list_parser = SLP_SSHOCEAN, interval_sec: int = 0) -> None:
+        super().__init__(server_dict, server_list_parser, interval_sec)
+        
     def filling_form(self, res) -> Tuple[str, dict]:
         form_data = dict()
         html = etree.HTML(res.text)
@@ -33,7 +33,6 @@ class Server_parser_sshocean(Server_parser_base):
             ret['pass'] = success_info_xpath.xpath('ul/li[3]/b/text()')[0]
             ret['host'] = success_info_xpath.xpath('ul/li[1]/b/text()')[0]
             ret['port'] = '22'
-            ret['config'] = f"forward=ssh://{ret['user']}:{ret['pass']}@{ret['host']}:{ret['port']}"
             ret['date_create'] = self.normalize_date(success_info_xpath.xpath('ul/li[4]/b/text()')[0], '%d %b %Y')
             ret['date_expire'] = self.normalize_date(success_info_xpath.xpath('ul/li[5]/b/text()')[0], '%d %b %Y')
             ret['date_span'] = f"{ret['date_create']} - {ret['date_expire']}"

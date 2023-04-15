@@ -1,5 +1,7 @@
 from urllib.parse import urlparse
 import logging, socket
+import requests
+from requests.adapters import HTTPAdapter
 
 class Server_list_parser_base:
     name = 'Server_list_parser_base'
@@ -16,6 +18,10 @@ class Server_list_parser_base:
             urlp = urlparse(server_list_url)
             self.server_provider_url = f'{urlp.scheme}://{urlp.netloc}'
 
+
+        self.session = requests.Session()
+        self.session.mount('http://', HTTPAdapter(max_retries=10))
+        self.session.mount('https://', HTTPAdapter(max_retries=10))
             
         logger = logging.getLogger(self.name)
         logger.setLevel(logging.INFO)
@@ -26,10 +32,10 @@ class Server_list_parser_base:
         _ch.setFormatter(formatter)
         logger.addHandler(_ch)
         self.logger = logger
-        self.logger.info(f'[{self.server_provider_url}], {self.server_list_url}')
 
     def parse(self) -> dict:
-        raise Exception('未实现parse方法')
+        self.logger.info(f'[{self.server_provider_url}], {self.server_list_url}')
+        ''' 子类重载该方法：先执行本父类方法，再做子类自己的事 '''
     
     @staticmethod
     def check_server(host, port=22):

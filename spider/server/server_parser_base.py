@@ -1,21 +1,38 @@
 import time, requests, logging, random, string, json
+from requests.adapters import HTTPAdapter
 from typing import Tuple, Iterable
 from tqdm import tqdm
 from pathlib import Path
+
+import sys
+from pathlib import Path
+sys.path.append(Path(__file__).parent.parent.parent)
+
+from ..server_list.server_list_parser_base import Server_list_parser_base
+
+
 
 class Server_parser_base:
     name = 'Server_parser_base'
     save_folder = Path(__file__).absolute().parent.parent.parent/'results'
 
     def __init__(self,
-                 server_dict: dict = dict(),
+                 server_dict: dict = None,
+                 server_list_parser: Server_list_parser_base = None,
                  interval_sec: int = 0
                  ) -> None:
         '''
-        server_dict: {url:{'host':.., 'port':.., 'region':..}}
+        server_dict 若为 None, 则使用 server_list_parser.parse()
+        
+        server_dict 格式: {url:{'host':.., 'port':.., 'region':..}}
         '''
         self.server_dict = server_dict
+        self.server_list_parser = server_list_parser
         self.interval_sec = interval_sec
+
+        self.session = requests.Session()
+        self.session.mount('http://', HTTPAdapter(max_retries=10))
+        self.session.mount('https://', HTTPAdapter(max_retries=10))
         
             
         logger = logging.getLogger(self.name)
@@ -27,11 +44,14 @@ class Server_parser_base:
         _ch.setFormatter(formatter)
         logger.addHandler(_ch)
         self.logger = logger
-        self.logger.info(f'num of servers: {len(self.server_dict)}')
 
     def parse(self, save=True, init_index=0) -> dict:
+        if self.server_dict is None:
+            self.server_dict = self.server_list_parser.parse()
+        self.logger.info(f'num of servers: {len(self.server_dict)}')
+
         ret = self.server_dict.copy()
-        for i, url in tqdm(enumerate(self.server_dict.keys()), desc='parsing servers: '):
+        for i, url in tqdm(enumerate(self.server_dict.keys()), desc=f'{self.name} parsing servers: '):
             if i<init_index:
                 continue
             self.logger.info(url)
@@ -41,16 +61,17 @@ class Server_parser_base:
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36',
                 'Referer': self.server_dict[url]['Referer']
             }
-            res = requests.get(url, headers=headers, allow_redirects=False)
+            res = self.session.get(url, headers=headers, allow_redirects=False, timeout=60)
             assert res.status_code in [200,302], f'status_code: {res.status_code}, url: {res.url}'
             post_url, form_data = self.filling_form(res)
             headers['Referer'] = res.url
-            res = requests.post(post_url, data=form_data, headers=headers, allow_redirects=False)
+            res = self.session.post(post_url, data=form_data, headers=headers, allow_redirects=False, timeout=60)
             info_dict = self.after_filling_form(res) # keys: user, pass, host, [ip], port, config
             ret[url].update(info_dict)
             if 'error_info' in ret[url]:
                 self.logger.info(f"{ret[url]['region']}, {url} , {ret[url]['error_info']}")
             else:
+                ret[url]['config'] = f"forward=ssh://{ret[url]['user']}:{ret[url]['pass']}@{ret[url].get('ip', ret[url]['host'])}:{ret[url]['port']}"
                 self.logger.info(f"{ret[url]['region']}, {ret[url]['config']}")
         if save:
             json_file = self.save_folder/f'{self.name}.json'
@@ -78,7 +99,7 @@ class Server_parser_base:
         clientKey = "ddd1cf72d9955a0e8ca7d05597fea5eb1dce33de5331" # clientKey：在个人中心获取
 
         # 第一步，创建验证码任务 
-        self.logger.info('getting yescaptcha taskID...')
+        self.logger.info(f'getting yescaptcha taskID...')
         url = "https://china.yescaptcha.com/createTask"
         data = {
             "clientKey": clientKey,
@@ -90,8 +111,7 @@ class Server_parser_base:
         }
         try:
             # 发送JSON格式的数据
-            # result = requests.post(url, json=data, verify=False).json()
-            taskID = requests.post(url, json=data).json().get('taskId')
+            taskID = self.session.post(url, json=data, timeout=60).json().get('taskId')
             self.logger.info(f'yescaptcha taskID: {taskID}')
             
         except Exception as e:
@@ -107,12 +127,8 @@ class Server_parser_base:
                     "clientKey": clientKey,
                     "taskId": taskID
                 }
-                # result = requests.post(url, json=data, verify=False).json()
-                # gRecaptchaResponse = requests.post(url, json=data).json().get('solution', {}).get('gRecaptchaResponse')
-                # self.logger.info(f'yescaptcha result: {gRecaptchaResponse}')
-                # return gRecaptchaResponse
             
-                result = requests.post(url, json=data).json()
+                result = self.session.post(url, json=data, timeout=60).json()
                 solution = result.get('solution', {})
                 if solution:
                     gRecaptchaResponse = solution.get('gRecaptchaResponse')
