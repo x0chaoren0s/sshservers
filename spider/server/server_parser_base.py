@@ -30,9 +30,7 @@ class Server_parser_base:
         self.server_list_parser = server_list_parser
         self.interval_sec = interval_sec
 
-        self.session = requests.Session()
-        self.session.mount('http://', HTTPAdapter(max_retries=10))
-        self.session.mount('https://', HTTPAdapter(max_retries=10))
+        self.session = None
         
             
         logger = logging.getLogger(self.name)
@@ -52,6 +50,7 @@ class Server_parser_base:
 
         ret = self.server_dict.copy()
         for i, url in tqdm(enumerate(self.server_dict.keys()), desc=f'{self.name} parsing servers: '):
+            self.session = self.new_session()
             if i<init_index:
                 continue
             self.logger.info(url)
@@ -61,17 +60,27 @@ class Server_parser_base:
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36',
                 'Referer': self.server_dict[url]['Referer']
             }
-            res = self.session.get(url, headers=headers, allow_redirects=False, timeout=60)
-            assert res.status_code in [200,302], f'status_code: {res.status_code}, url: {res.url}'
+            try:
+                res = self.session.get(url, headers=headers, allow_redirects=False, timeout=60)
+            except:
+                ret[url]['error_info'] = 'get timeout'
+                self.logger.info(f"{ret[url]['region']}, {url} , {ret[url]['error_info']}")
+                continue
             post_url, form_data = self.filling_form(res)
             headers['Referer'] = res.url
-            res = self.session.post(post_url, data=form_data, headers=headers, allow_redirects=False, timeout=60)
+            try:
+                res = self.session.post(post_url, data=form_data, headers=headers, allow_redirects=False, timeout=60)
+            except:
+                ret[url]['error_info'] = 'post timeout'
+                self.logger.info(f"{ret[url]['region']}, {url} , {ret[url]['error_info']}")
+                continue
             info_dict = self.after_filling_form(res) # keys: user, pass, host, [ip], port, config
             ret[url].update(info_dict)
             if 'error_info' in ret[url]:
                 self.logger.info(f"{ret[url]['region']}, {url} , {ret[url]['error_info']}")
             else:
                 ret[url]['config'] = f"forward=ssh://{ret[url]['user']}:{ret[url]['pass']}@{ret[url].get('ip', ret[url]['host'])}:{ret[url]['port']}"
+                ret[url]['date_span'] = f"{ret[url]['date_create']} - {ret[url]['date_expire']}"
                 self.logger.info(f"{ret[url]['region']}, {ret[url]['config']}")
         if save:
             json_file = self.save_folder/f'{self.name}.json'
@@ -84,6 +93,9 @@ class Server_parser_base:
                         print(f"# {server_info['date_span']}", file=fout)
                     if 'config' in server_info:
                         print(server_info['config'], file=fout)
+        num_tried = len(ret)
+        num_succeed = len([v for v in list(ret.values()) if 'error_info' not in v])
+        self.logger.info(f'finished. succeed: {num_succeed} / {num_tried}')
         return ret
 
     def filling_form(self, res) -> Tuple[str, dict]:
@@ -99,7 +111,7 @@ class Server_parser_base:
         clientKey = "ddd1cf72d9955a0e8ca7d05597fea5eb1dce33de5331" # clientKey：在个人中心获取
 
         # 第一步，创建验证码任务 
-        self.logger.info(f'getting yescaptcha taskID...')
+        self.logger.info(f'getting yescaptcha taskID for recaptcha_v2...')
         url = "https://china.yescaptcha.com/createTask"
         data = {
             "clientKey": clientKey,
@@ -112,13 +124,13 @@ class Server_parser_base:
         try:
             # 发送JSON格式的数据
             taskID = self.session.post(url, json=data, timeout=60).json().get('taskId')
-            self.logger.info(f'yescaptcha taskID: {taskID}')
+            self.logger.info(f'yescaptcha taskID for recaptcha_v2: {taskID}')
             
         except Exception as e:
             self.logger.error(e)
 
         # 第二步：使用taskId获取response 
-        self.logger.info(f'getting yescaptcha result...')
+        self.logger.info(f'getting yescaptcha result for recaptcha_v2...')
         sec = 0
         while sec < max_sec:
             try:
@@ -140,6 +152,64 @@ class Server_parser_base:
             sec += sleep_sec
             self.logger.info(f'spent {sec}s in getting...')
             time.sleep(sleep_sec)
+    
+    def solve_hcaptcha(self, websiteURL: str, websiteKey: str) -> str:
+        sleep_sec = 4 # 循环请求识别结果，sleep_sec 秒请求一次
+        max_sec = 180  # 最多等待 max_sec 秒
+        clientKey = "ddd1cf72d9955a0e8ca7d05597fea5eb1dce33de5331" # clientKey：在个人中心获取
+
+        # 第一步，创建验证码任务 
+        self.logger.info(f'getting yescaptcha taskID for hcaptcha...')
+        url = "https://china.yescaptcha.com/createTask"
+        data = {
+            "clientKey": clientKey,
+            "task": {
+                "websiteURL": websiteURL,
+                "websiteKey": websiteKey,
+                "type": "HCaptchaTaskProxyless"
+            }
+        }
+        try:
+            # 发送JSON格式的数据
+            taskID = self.session.post(url, json=data, timeout=60).json().get('taskId')
+            self.logger.info(f'yescaptcha taskID for hcaptcha: {taskID}')
+            
+        except Exception as e:
+            self.logger.error(e)
+
+        # 第二步：使用taskId获取response 
+        self.logger.info(f'getting yescaptcha result for hcaptcha...')
+        sec = 0
+        while sec < max_sec:
+            try:
+                url = f"https://china.yescaptcha.com/getTaskResult"
+                data = {
+                    "clientKey": clientKey,
+                    "taskId": taskID
+                }
+            
+                result = self.session.post(url, json=data, timeout=60).json()
+                solution = result.get('solution', {})
+                if solution:
+                    gRecaptchaResponse = solution.get('gRecaptchaResponse')
+                    if gRecaptchaResponse:
+                        return gRecaptchaResponse
+            except Exception as e:
+                self.logger.error(e)
+
+            sec += sleep_sec
+            self.logger.info(f'spent {sec}s in getting...')
+            time.sleep(sleep_sec)
+
+    def new_session(self) -> requests.Session:
+        ''' 每创建一个账号都使用新 session 可直接绕过网站设置的创建账户时间间隔限制 '''
+        if 'session' in dir(self) and self.session is not None:
+            self.session.close()
+            del self.session
+        session = requests.Session()
+        session.mount('http://', HTTPAdapter(max_retries=10))
+        session.mount('https://', HTTPAdapter(max_retries=10))
+        return session
 
     @staticmethod
     def getRandStr(strLen = -1):
