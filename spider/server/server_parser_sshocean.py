@@ -27,7 +27,7 @@ class Server_parser_sshocean(Server_parser_base):
     def after_filling_form(self, res) -> dict:
         ret = dict()
         html = etree.HTML(res.text)
-        if len(html.xpath('//div[@class="alert alert-success text-center p-2"]'))>0:
+        try:
             success_info_xpath = html.xpath('//div[@class="alert alert-success text-center p-2"]')[0]
             ret['user'] = success_info_xpath.xpath('ul/li[2]/b/text()')[0]
             ret['pass'] = success_info_xpath.xpath('ul/li[3]/b/text()')[0]
@@ -35,11 +35,10 @@ class Server_parser_sshocean(Server_parser_base):
             ret['port'] = '22'
             ret['date_create'] = self.normalize_date(success_info_xpath.xpath('ul/li[4]/b/text()')[0], '%d %b %Y')
             ret['date_expire'] = self.normalize_date(success_info_xpath.xpath('ul/li[5]/b/text()')[0], '%d %b %Y')
-            ret['date_span'] = f"{ret['date_create']} - {ret['date_expire']}"
-        elif len(html.xpath('//div[@class="alert alert-warning"]/text()[2]'))>0:
-            ret['error_info'] = html.xpath('//div[@class="alert alert-warning"]/text()[2]')[0].strip()
-        else:
+        except:
             ret['error_info'] = 'something wrong.'
+            with open(f'{self.name}.html', 'w') as fout:
+                print(res.text, file=fout)
         return ret
     
 SP_SSHOCEAN = Server_parser_sshocean()

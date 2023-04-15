@@ -30,8 +30,10 @@ class Server_list_parser_sshocean(Server_list_parser_base):
         ret = dict()
         # for region, list_url in zip(region_str_list, region_list_url_list):
         for list_url in tqdm(region_list_url_list, desc=f'{self.name} parsing regions: '):
-            res = self.session.get(list_url, timeout=60)
-            assert res.status_code==200, f'status_code: {res.status_code}, url: {res.url}'
+            try:
+                res = self.session.get(list_url, timeout=60)
+            except:
+                continue
             html = etree.HTML(res.text)
             server_card_xpath_list = html.xpath('//div[@class="col-lg-4 col-md-6 mb-5"]')
             server_region_list = [x.xpath('div/div/table/tr[2]/td[2]/b/text()')[0] for x in server_card_xpath_list]

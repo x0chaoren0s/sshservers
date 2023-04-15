@@ -34,9 +34,10 @@ class Server_parser_vpnjantit(Server_parser_base):
             ret['port'] = '22'
             ret['date_create'] = self.normalized_local_date()
             ret['date_expire'] = self.normalize_date(info_card_xpath.xpath('h5[5]/text()')[0], '%Y-%m-%d / %H:%M:%S')
-            ret['date_span'] = f"{ret['date_create']} - {ret['date_expire']}"
         except:
             ret['error_info'] = 'something wrong.'
+            with open(f'{self.name}.html', 'w') as fout:
+                print(res.text, file=fout)
         return ret
     
 SP_VPNJANTIT = Server_parser_vpnjantit()
